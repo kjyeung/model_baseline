@@ -24,7 +24,7 @@ class ARCTester:
         if provider == "anthropic":
             return AnthropicAdapter(generation_model_name)
         elif provider == "openai":
-            return OpenAIAdapter(generation_model_namemodel_name)
+            return OpenAIAdapter(generation_model_name)
         elif provider == "deepseek":
             return DeepseekCoTAdapter(generation_model_name, generation_base_url, extraction_model_name, extraction_base_url, parse_cot)
         else:
