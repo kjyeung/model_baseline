@@ -5,7 +5,7 @@ import json
 from openai import OpenAI
 load_dotenv()
 
-class DeepseekAdapter(ProviderAdapter):
+class DeepseekAdapterCoT(ProviderAdapter):
     def __init__(self, model_name: str, max_tokens: int = 4024):
         self.client = self.init_client()
         self.model_name = model_name
@@ -29,6 +29,7 @@ class DeepseekAdapter(ProviderAdapter):
         # print(f"USAGE|PROMPT|{response.usage.prompt_tokens}")
         # print(f"USAGE|COMPLETION|{response.usage.completion_tokens}")
         # print(f"Response: {response.choices[0].message.content.strip()}")
+        print(f"Response: {response.choices[0].message}")
         chain_of_thought = response.choices[0].message.reasoning_content
         return response.choices[0].message.content.strip(), chain_of_thought
 
