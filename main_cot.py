@@ -1,5 +1,5 @@
 import json
-from src.adapters import ProviderAdapter, AnthropicAdapter, OpenAIAdapter, DeepseekAdapterCoT
+from src.adapters import ProviderAdapter, AnthropicAdapter, OpenAIAdapter, DeepseekCoTAdapter
 from dotenv import load_dotenv
 import src.utils as utils
 from src.models import ARCTaskOutput, ARCPair
@@ -11,8 +11,8 @@ import argparse
 load_dotenv()
 
 class ARCTester:
-    def __init__(self, provider: str, model_name: str, save_submission_dir: str, overwrite_submission: bool, print_submission: bool, num_attempts: int, retry_attempts: int, print_logs: bool):
-        self.provider = self.init_provider(provider, model_name)
+    def __init__(self, provider: str, generation_model_name: str, extraction_model_name: str, generation_base_url: str, extraction_base_url: str, parse_cot: bool, save_submission_dir: str, overwrite_submission: bool, print_submission: bool, num_attempts: int, retry_attempts: int, print_logs: bool):
+        self.provider = self.init_provider(provider, generation_model_name, extraction_model_name, generation_base_url, extraction_base_url, parse_cot)
         self.save_submission_dir = save_submission_dir
         self.overwrite_submission = overwrite_submission
         self.print_submission = print_submission
@@ -20,14 +20,13 @@ class ARCTester:
         self.retry_attempts = retry_attempts
         self.print_logs = print_logs
 
-    def init_provider(self, provider: str, model_name: str) -> ProviderAdapter:
+    def init_provider(self, provider: str, generation_model_name: str, extraction_model_name: str, generation_base_url: str, extraction_base_url: str, parse_cot: bool) -> ProviderAdapter:
         if provider == "anthropic":
-            return AnthropicAdapter(model_name)
+            return AnthropicAdapter(generation_model_name)
         elif provider == "openai":
-            return OpenAIAdapter(model_name)
+            return OpenAIAdapter(generation_model_namemodel_name)
         elif provider == "deepseek":
-            return DeepseekAdapterCoT(model_name)
-        ## To do: add other providers as models are added
+            return DeepseekCoTAdapter(generation_model_name, generation_base_url, extraction_model_name, extraction_base_url, parse_cot)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
         
@@ -234,7 +233,8 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str, help="Data set to run. Configure in config/config.json")
     parser.add_argument("--task_id", type=str, help="Specific task ID to run")
     parser.add_argument("--provider", type=str, default="anthropic", help="Provider to use")
-    parser.add_argument("--model", type=str, default="claude-3-5-sonnet-20241022", help="Model to use")
+    parser.add_argument("--generation_model", type=str, default="claude-3-5-sonnet-20241022", help="Model to use for generation")
+    parser.add_argument("--extraction_model", type=str, default=None, help="Model to use for extraction")
     parser.add_argument(
         "--save_submission_dir",
         type=str,
@@ -247,11 +247,20 @@ if __name__ == "__main__":
     parser.add_argument("--num_attempts", type=int, default=2, help="Number of attempts for each prediction")
     parser.add_argument("--retry_attempts", type=int, default=2, help="Number of retry attempts for failed predictions")
     parser.add_argument("--print_logs", action="store_true", help="Disable printing logs to console (default: False)")
+    parser.add_argument("--generation_base_url", type=str, default="https://api.deepseek.com", help="Deepseek CoT: Base URL used for generation")
+    parser.add_argument("--extraction_base_url", type=str, help="Deepseek CoT: Base URL used for extraction")
+    parser.add_argument("--parse_cot", action="store_true",
+                        help="Deepseek CoT: Whether to extract chain-of-thought without API support")
+    
     args = parser.parse_args()
 
     arc_solver = ARCTester(
         provider=args.provider,
-        model_name=args.model,
+        generation_model_name=args.generation_model,
+        extraction_model_name=args.extraction_model,
+        generation_base_url=args.generation_base_url,
+        extraction_base_url=args.extraction_base_url,
+        parse_cot=args.parse_cot,
         save_submission_dir=args.save_submission_dir, 
         overwrite_submission=args.overwrite_submission,
         print_submission=args.print_submission,
