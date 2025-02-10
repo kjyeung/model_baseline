@@ -152,7 +152,7 @@ class ARCTester:
             # Handle the error (e.g., return a default value, retry, or raise an exception)
             raise
         
-        return json_response, chain_of_thought
+        return json_response, chain_of_thought, initial_response
     
     def generate_task_solution(self, data_dir, task_id):
         """
@@ -187,14 +187,16 @@ class ARCTester:
             for attempt in range(1, self.num_attempts + 1):
                 attempt_key = f"attempt_{attempt}"
                 cot_key = f"cot_{attempt}"
+                initial_response_key = f"initial_response_{attempt}"
                 pair_attempts[attempt_key] = None  # Initialize as None
                 pair_attempts[cot_key] = None
+                pair_attempts[initial_response_key] = None
 
                 # Try to get a prediction, with retries in case of failure
                 for retry in range(self.retry_attempts):
                     try:
                         self.print_log(f"    Predicting attempt #{attempt}, retry #{retry + 1}")
-                        prediction, chain_of_thought = self.get_task_prediction(
+                        prediction, chain_of_thought, initial_response = self.get_task_prediction(
                             training_pairs=train_pairs,
                             test_input=pair
                         )
@@ -204,6 +206,7 @@ class ARCTester:
                             # self.print_log(f"    Chain of thought: {chain_of_thought}")
                             pair_attempts[attempt_key] = prediction
                             pair_attempts[cot_key] = chain_of_thought
+                            pair_attempts[initial_response_key] = initial_response
                             break  # Break the retry loop if prediction is successful
                         else:
                             self.print_log("    Prediction returned None, possibly due to rate limiting")
