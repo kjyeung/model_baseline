@@ -11,7 +11,7 @@ import argparse
 load_dotenv()
 
 class ARCTester:
-    def __init__(self, provider: str, generation_model_name: str, extraction_model_name: str, generation_base_url: str, extraction_base_url: str, parse_cot: bool, save_submission_dir: str, overwrite_submission: bool, print_submission: bool, num_attempts: int, retry_attempts: int, print_logs: bool):
+    def __init__(self, provider: str, generation_model_name: str, extraction_model_name: str, generation_base_url: str, extraction_base_url: str, parse_cot: bool, save_submission_dir: str, overwrite_submission: bool, print_submission: bool, num_attempts: int, retry_attempts: int, print_logs: bool, language: str):
         self.provider = self.init_provider(provider, generation_model_name, extraction_model_name, generation_base_url, extraction_base_url, parse_cot)
         self.save_submission_dir = save_submission_dir
         self.overwrite_submission = overwrite_submission
@@ -19,6 +19,7 @@ class ARCTester:
         self.num_attempts = num_attempts
         self.retry_attempts = retry_attempts
         self.print_logs = print_logs
+        self.language = language
 
     def init_provider(self, provider: str, generation_model_name: str, extraction_model_name: str, generation_base_url: str, extraction_base_url: str, parse_cot: bool) -> ProviderAdapter:
         if provider == "anthropic":
@@ -123,7 +124,7 @@ class ARCTester:
         """
 
         # Convert the training pairs and test pairs into a prompt
-        prompt = convert_task_pairs_to_prompt(training_pairs, test_input)
+        prompt = convert_task_pairs_to_prompt(training_pairs, test_input, language=self.language)
 
         self.print_log(f"Making prediction for task")
         response, chain_of_thought = self.provider.make_prediction(prompt)
@@ -254,6 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("--extraction_base_url", type=str, help="Deepseek CoT: Base URL used for extraction")
     parser.add_argument("--parse_cot", action="store_true",
                         help="Deepseek CoT: Whether to extract chain-of-thought without API support")
+    parser.add_argument("--language", type=str, choices=["en", "cn", "jp"], default="en", help="Language for the prompt")
     
     args = parser.parse_args()
 
@@ -269,7 +271,8 @@ if __name__ == "__main__":
         print_submission=args.print_submission,
         num_attempts=args.num_attempts,
         retry_attempts=args.retry_attempts,
-        print_logs=args.print_logs
+        print_logs=args.print_logs,
+        language=args.language
     )
    
     arc_solver.generate_task_solution(
