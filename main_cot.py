@@ -127,10 +127,11 @@ class ARCTester:
         prompt = convert_task_pairs_to_prompt(training_pairs, test_input, language=self.language)
 
         self.print_log(f"Making prediction for task")
-        response, chain_of_thought = self.provider.make_prediction(prompt)
+        answer, chain_of_thought = self.provider.make_prediction(prompt)
 
-        # print(response)
-        return response, chain_of_thought
+        self.print_log(f"Answer: {answer}")
+
+        return answer, chain_of_thought
 
     def get_task_prediction(self, training_pairs: List[ARCPair], test_input: ARCPair) -> ARCTaskOutput:
         """
@@ -142,18 +143,20 @@ class ARCTester:
         """
 
         # Get the string representation of your task
-        initial_response, chain_of_thought = self.predict_task_output(training_pairs, test_input)
+        answer, chain_of_thought = self.predict_task_output(training_pairs, test_input)
 
         # Attempt to parse and validate the JSON response
+        self.print_log("Parsing JSON response.")
         try:
             # Attempt to parse and validate the JSON response
-            json_response = self.parse_and_validate_json(initial_response)
+            json_response = self.parse_and_validate_json(answer)
         except json.JSONDecodeError as e:
             self.print_log(f"JSON parsing failed: {e}")
+            self.print_log(f"LLM response received but JSON parsing failed. Response: '{answer}'")
             # Handle the error (e.g., return a default value, retry, or raise an exception)
             raise
         
-        return json_response, chain_of_thought, initial_response
+        return json_response, chain_of_thought, answer
     
     def generate_task_solution(self, data_dir, task_id):
         """

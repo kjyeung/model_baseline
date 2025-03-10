@@ -55,11 +55,13 @@ class DeepseekCoTAdapter(ProviderAdapter):
         # print(f"USAGE|COMPLETION|{response.usage.completion_tokens}")
         # print(f"Response: {response.choices[0].message.content.strip()}")
         print(f"Response: {response.choices[0].message}")
+        print(f"Raw content: '{response.choices[0].message.content}'")
         if self.parse_cot:
             chain_of_thought, answer = self.extract_chain_of_thought(response)
         else:
             chain_of_thought = response.choices[0].message.reasoning_content
             answer = response.choices[0].message.content.strip()
+        print(f"Extracted answer: '{answer}'")
         return answer, chain_of_thought
 
     def chat_completion(self, messages: str) -> str:
