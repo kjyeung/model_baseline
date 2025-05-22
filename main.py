@@ -1,5 +1,5 @@
 import json
-from src.adapters import ProviderAdapter, AnthropicAdapter, OpenAIAdapter, DeepseekAdapter, GeminiAdapter
+from src.adapters import ProviderAdapter, AnthropicAdapter, OpenAIAdapter, DeepseekAdapter, GeminiAdapter, OpenAICompatibleAdapter
 from dotenv import load_dotenv
 import src.utils as utils
 from src.models import ARCTaskOutput, ARCPair
@@ -11,8 +11,11 @@ import argparse
 load_dotenv()
 
 class ARCTester:
-    def __init__(self, provider: str, model_name: str, save_submission_dir: str, overwrite_submission: bool, print_submission: bool, num_attempts: int, retry_attempts: int, print_logs: bool):
-        self.provider = self.init_provider(provider, model_name)
+    def __init__(self, provider: str, model_name: str, save_submission_dir: str, overwrite_submission: bool, print_submission: bool, num_attempts: int, retry_attempts: int, print_logs: bool, base_url: str = None):
+        if base_url:
+            self.provider = self.init_provider(provider, model_name, base_url)
+        else:
+            self.provider = self.init_provider(provider, model_name)
         self.save_submission_dir = save_submission_dir
         self.overwrite_submission = overwrite_submission
         self.print_submission = print_submission
@@ -20,7 +23,7 @@ class ARCTester:
         self.retry_attempts = retry_attempts
         self.print_logs = print_logs
 
-    def init_provider(self, provider: str, model_name: str) -> ProviderAdapter:
+    def init_provider(self, provider: str, model_name: str, base_url: str = None) -> ProviderAdapter:
         if provider == "anthropic":
             return AnthropicAdapter(model_name)
         elif provider == "openai":
@@ -29,6 +32,8 @@ class ARCTester:
             return DeepseekAdapter(model_name)
         elif provider == "gemini":
             return GeminiAdapter(model_name)
+        elif provider == "openai_compatible":
+            return OpenAICompatibleAdapter(model_name, base_url)
         else:
             raise ValueError(f"Unsupported provider: {provider}")
         
