@@ -129,7 +129,7 @@ class ARCTester:
         self.print_log(f"Making prediction for task")
         answer, chain_of_thought = self.provider.make_prediction(prompt)
 
-        self.print_log(f"Answer: {answer}")
+        # self.print_log(f"Answer: {answer}")
 
         return answer, chain_of_thought
 

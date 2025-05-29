@@ -54,8 +54,6 @@ class DeepseekCoTAdapter(ProviderAdapter):
         # print(f"USAGE|PROMPT|{response.usage.prompt_tokens}")
         # print(f"USAGE|COMPLETION|{response.usage.completion_tokens}")
         # print(f"Response: {response.choices[0].message.content.strip()}")
-        print(f"Response: {response.choices[0].message}")
-        print(f"Raw content: '{response.choices[0].message.content}'")
         if self.parse_cot:
             chain_of_thought, answer = self.extract_chain_of_thought(response)
         else:
