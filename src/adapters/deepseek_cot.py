@@ -7,7 +7,7 @@ load_dotenv()
 import re
 
 class DeepseekCoTAdapter(ProviderAdapter):
-    def __init__(self, generation_model_name: str, generation_base_url: str , extraction_model_name: str = None, extraction_base_url: str = None, parse_cot:bool = False, max_tokens: int = 4024):
+    def __init__(self, generation_model_name: str, generation_base_url: str , extraction_model_name: str = None, extraction_base_url: str = None, parse_cot:bool = False):
         """
         Initialize the flexible Deepseek adapter.
         
@@ -19,11 +19,9 @@ class DeepseekCoTAdapter(ProviderAdapter):
             extraction_base_url (Optional[str]): Base URL used for JSON extraction.
                 Defaults to generation_base_url if not provided.
             parse_cot (bool): Whether or not to parse a chain-of-thought from the response.
-            max_tokens (int): Maximum tokens for generation.
         """
         self.generation_model_name = generation_model_name
         self.extraction_model_name = extraction_model_name if extraction_model_name else generation_model_name
-        self.max_tokens = max_tokens
         self.parse_cot = parse_cot
         self.generation_base_url = generation_base_url
         # If a separate extraction URL is not specified, fall back to using the generation URL
